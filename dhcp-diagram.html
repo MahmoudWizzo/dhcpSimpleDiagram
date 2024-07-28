@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DHCP Diagram</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .diagram {
+            display: flex;
+            flex-direction: row-reverse; /* Changed to reverse for RTL */
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .node {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .arrow {
+            font-size: 24px;
+            color: #ccc;
+            transition: color 0.3s;
+            transform: scaleX(-1); /* Flip the arrow horizontally */
+        }
+        .info-icon {
+            cursor: pointer;
+            color: blue;
+            margin-right: 5px;
+        }
+        .info-text {
+            display: none;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>عملية DHCP</h2>
+        <div class="diagram">
+            <div id="connected" class="node">جهاز متصل</div>
+            <div class="arrow">➡️</div>
+            <div id="server" class="node">خادم DHCP</div>
+            <div class="arrow">➡️</div>
+            <div id="client" class="node">جهاز جديد</div>
+        </div>
+        <div>
+            <span id="step-text"></span>
+            <span class="info-icon" onclick="toggleInfo()">ℹ️</span>
+        </div>
+        <div id="info-text" class="info-text"></div>
+        <div>
+            <button onclick="nextStep()">الخطوة التالية</button>
+            <button onclick="resetDiagram()">إعادة تعيين</button>
+        </div>
+    </div>
+
+    <script>
+        const steps = [
+            { text: 'جهاز جديد يتصل بالشبكة', info: 'يتم توصيل جهاز جديد بالشبكة ويحتاج إلى عنوان IP' },
+            { text: 'إرسال طلب DHCP (DHCP Discover)', info: 'يرسل الجهاز رسالة بث للعثور على خادم DHCP' },
+            { text: 'خادم DHCP يستجيب (DHCP Offer)', info: 'يعرض خادم DHCP عنوان IP متاح' },
+            { text: 'الجهاز يطلب العنوان (DHCP Request)', info: 'يطلب الجهاز العنوان IP المعروض' },
+            { text: 'خادم DHCP يؤكد (DHCP Acknowledge)', info: 'يؤكد خادم DHCP تخصيص عنوان IP' },
+            { text: 'الجهاز يستخدم العنوان IP', info: 'يبدأ الجهاز في استخدام عنوان IP المخصص' }
+        ];
+
+        let currentStep = 0;
+        let ipAddress = '';
+
+        function updateDiagram() {
+            document.getElementById('step-text').textContent = steps[currentStep].text;
+            document.getElementById('info-text').textContent = steps[currentStep].info;
+
+            document.getElementById('client').style.backgroundColor = currentStep >= 0 ? '#e3f2fd' : 'white';
+            document.getElementById('server').style.backgroundColor = currentStep >= 2 ? '#fff9c4' : 'white';
+            document.getElementById('connected').style.backgroundColor = currentStep >= 5 ? '#c8e6c9' : 'white';
+
+            document.querySelectorAll('.arrow')[1].style.color = currentStep >= 1 ? '#4caf50' : '#ccc';
+            document.querySelectorAll('.arrow')[0].style.color = currentStep >= 4 ? '#4caf50' : '#ccc';
+
+            if (currentStep > 3 && ipAddress) {
+                document.getElementById('client').innerHTML = `جهاز جديد<br>IP: ${ipAddress}`;
+            }
+        }
+
+        function nextStep() {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                if (currentStep === 3) {
+                    ipAddress = generateRandomIP();
+                }
+                updateDiagram();
+            }
+        }
+
+        function resetDiagram() {
+            currentStep = 0;
+            ipAddress = '';
+            document.getElementById('client').innerHTML = 'جهاز جديد';
+            updateDiagram();
+        }
+
+        function toggleInfo() {
+            const infoText = document.getElementById('info-text');
+            infoText.style.display = infoText.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function generateRandomIP() {
+            return `192.168.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}`;
+        }
+
+        updateDiagram();
+    </script>
+</body>
+</html>
